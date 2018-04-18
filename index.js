@@ -12,6 +12,7 @@ const setting = {
 
 const setI18nLanguage = function (lang, messages) {
     // this -> $i18n
+    if (!messages) return
     this.locale = lang
     this.setLocaleMessage(lang, messages)
     document.querySelector('html').setAttribute('lang', lang)
@@ -64,7 +65,7 @@ const $i18nAsync = function (lang, force = false) {
         if (force || setting.messages[lang] === undefined) {
             return loadLang.call(this, lang)
         }
-        return Promise.resolve(setI18nLanguage.call(this, lang))
+        return Promise.resolve(setI18nLanguage.call(this.$i18n, lang, setting.messages[lang]))
     }
     return Promise.resolve(lang)
 }
