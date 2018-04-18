@@ -7,7 +7,8 @@ const setting = {
     axios: undefined,
     request: undefined,
     path: undefined,
-    messages: undefined
+    messages: undefined,
+    timeout: undefined
 }
 
 const setI18nLanguage = function (lang, messages) {
@@ -36,7 +37,9 @@ const loadLang = function (lang) {
     }
     if (setting.request) {
         // 1, try load JSON from online
-        setting.axios.get(setting.request.replace(/\{lang\}/gi, lang))
+        setting.axios.get(setting.request.replace(/\{lang\}/gi, lang), {
+            timeout: setting.timeout
+        })
             .then(({data}) => {
                 // get online lang success
                 setI18nLanguage.call(this.$i18n, lang, data)
@@ -73,7 +76,7 @@ const $i18nAsync = function (lang, force = false) {
 export default {
     install: (Vue, options) => {
         _forEach(options, (o, name) => {
-            if (['axios', 'request', 'path', 'messages'].indexOf(name) > -1) {
+            if (['axios', 'request', 'path', 'messages', 'timeout'].indexOf(name) > -1) {
                 setting[name] = o
             }
         })
