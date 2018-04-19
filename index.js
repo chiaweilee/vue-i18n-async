@@ -20,20 +20,7 @@ const setI18nLanguage = function (lang, messages) {
 
 const loadLang = function (lang) {
     // this -> vm
-    if (setting.request && !setting.request.plugin) {
-        console.warn('No axios or axios like plugin set for online lang request!')
-        return
-    }
-    if (!setting.path) {
-        if (setting.request) {
-            // local lang from online ONLY
-            console.warn('Lang lang from online only might cause some problems!')
-            return
-        } else {
-            console.warn('Both of online lang request and local lang path not set!')
-        }
-    }
-    if (setting.request.plugin) {
+    if (setting.request && setting.request.plugin) {
         if (typeof setting.request.before === 'function') {
             setting.request.before()
         }
@@ -59,7 +46,6 @@ const loadLang = function (lang) {
     }
     )
     } else {
-        // 1, no online set, try load local
         loadLocal.call(this, lang)
     }
 }
