@@ -14,9 +14,17 @@ import vueI18nAsync from './plugin/vue-i18n-async'
 Vue.use(VueI18n)
 
 Vue.use(vueI18nAsync, {
-  axios, // axios or axios like plugin, optional, for request.
-  timeout: 3000, // timeout for axios or axios like
-  request: 'http://localhost:8090/{lang}.js', // optional, {lang} will replace with lang name
+  request: {
+    plugin: axios, // axios or axios like plugin, optional, for request.
+    url: 'http://localhost:8090/{lang}.js', // optional, {lang} will replace with lang name
+    timeout: 3000, // timeout for axios or axios like
+    before: () => {
+      console.log(this)
+    },
+    after: () => {
+      console.log(this)
+    }
+  }
   path: '@/lang/', // require, the dir path of lang.js,
   // the same messages with new VueI18n()
   messages: {

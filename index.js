@@ -4,11 +4,9 @@
 import _forEach from 'lodash/forEach'
 
 const setting = {
-    axios: undefined,
     request: undefined,
     path: undefined,
-    messages: undefined,
-    timeout: undefined
+    messages: undefined
 }
 
 const setI18nLanguage = function (lang, messages) {
@@ -22,7 +20,7 @@ const setI18nLanguage = function (lang, messages) {
 
 const loadLang = function (lang) {
     // this -> vm
-    if (!setting.axios && setting.request) {
+    if (setting.request && !setting.request.plugin) {
         console.warn('No axios or axios like plugin set for online lang request!')
         return
     }
@@ -35,22 +33,31 @@ const loadLang = function (lang) {
             console.warn('Both of online lang request and local lang path not set!')
         }
     }
-    if (setting.request) {
+    if (setting.request.plugin) {
+        if (typeof setting.request.before === 'function') {
+            setting.request.before()
+        }
         // 1, try load JSON from online
-        setting.axios.get(setting.request.replace(/\{lang\}/gi, lang), {
-            timeout: setting.timeout
+        setting.request.plugin.get(setting.request.url.replace(/\{lang\}/gi, lang), {
+            timeout: setting.request.timeout
         })
             .then(({data}) => {
-                // get online lang success
-                setI18nLanguage.call(this.$i18n, lang, data)
-            })
-            .catch(
-                () => {
-                    // 2, load online fail, use local
-                    console.warn('Get online lang package fail, use local instead.')
-                    loadLocal.call(this, lang)
-                }
-            )
+            // get online lang success
+            setI18nLanguage.call(this.$i18n, lang, data)
+        if (typeof setting.request.after === 'function') {
+            setting.request.after()
+        }
+    })
+    .catch(
+            () => {
+            // 2, load online fail, use local
+            console.warn('Get online lang package fail, use local instead.')
+        loadLocal.call(this, lang)
+        if (typeof setting.request.after === 'function') {
+            setting.request.after()
+        }
+    }
+    )
     } else {
         // 1, no online set, try load local
         loadLocal.call(this, lang)
@@ -75,11 +82,11 @@ const $i18nAsync = function (lang, force = false) {
 
 export default {
     install: (Vue, options) => {
-        _forEach(options, (o, name) => {
-            if (['axios', 'request', 'path', 'messages', 'timeout'].indexOf(name) > -1) {
-                setting[name] = o
-            }
-        })
-        Object.defineProperty(Vue.prototype, '$i18nAsync', {value: $i18nAsync})
+    _forEach(options, (o, name) => {
+    if (['request', 'path', 'messages'].indexOf(name) > -1) {
+        setting[name] = o
     }
+})
+Object.defineProperty(Vue.prototype, '$i18nAsync', {value: $i18nAsync})
+}
 }
