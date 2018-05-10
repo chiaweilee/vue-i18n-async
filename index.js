@@ -3,13 +3,13 @@
  */
 import _forEach from 'lodash/forEach'
 
-const setting = {
+var setting = {
     request: undefined,
     path: undefined,
     messages: undefined
 }
 
-const setI18nLanguage = function (lang, messages) {
+var setI18nLanguage = function (lang, messages) {
     // this -> $i18n
     if (!messages) return
     this.locale = lang
@@ -18,7 +18,7 @@ const setI18nLanguage = function (lang, messages) {
     return lang
 }
 
-const loadLang = function (lang) {
+var loadLang = function (lang) {
     // this -> vm
     if (setting.request && setting.request.plugin) {
         if (typeof setting.request.before === 'function') {
@@ -50,11 +50,11 @@ const loadLang = function (lang) {
     }
 }
 
-const loadLocal = function (lang) {
+var loadLocal = function (lang) {
     import(/* webpackChunkName: "lang-[request]" */ `@/lang/${lang}`).then(messages => setI18nLanguage.call(this.$i18n, lang, messages))
 }
 
-const $i18nAsync = function (lang, force = false) {
+var $i18nAsync = function (lang, force = false) {
     // this -> vm
     if (!lang) return
     if (force || this.$i18n.locale !== lang) {
