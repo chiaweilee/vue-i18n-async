@@ -25,7 +25,7 @@ Vue.use(vueI18nAsync, {
       console.log(this)
     }
   }
-  path: '@/lang/', // require, the dir path of lang.js,
+  local: (lang, setter) => import(/* webpackChunkName: "lang-[request]" */ `@/lang/${lang}`).then(messages => setter(lang, messages)),
   // the same messages with new VueI18n()
   messages: {
     en: undefine,
