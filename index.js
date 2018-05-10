@@ -5,7 +5,7 @@ import _forEach from 'lodash/forEach'
 
 var setting = {
     request: undefined,
-    path: undefined,
+    local: undefined,
     messages: undefined
 }
 
@@ -20,6 +20,7 @@ var setI18nLanguage = function (lang, messages) {
 
 var loadLang = function (lang) {
     // this -> vm
+    var _this = this
     if (setting.request && setting.request.plugin) {
         if (typeof setting.request.before === 'function') {
             setting.request.before()
@@ -30,7 +31,7 @@ var loadLang = function (lang) {
         })
             .then(function (e) {
                 // get online lang success
-                return setI18nLanguage.call(this.$i18n, lang, e.data)
+                return setI18nLanguage.call(_this.$i18n, lang, e.data)
                 if (typeof setting.request.after === 'function') {
                     setting.request.after()
                 }
@@ -39,7 +40,7 @@ var loadLang = function (lang) {
                 function () {
                     // 2, load online fail, use local
                     console.warn('Get online lang package fail, use local instead.')
-                    loadLocal.call(this, lang)
+                    loadLocal.call(_this, lang)
                     if (typeof setting.request.after === 'function') {
                         setting.request.after()
                     }
@@ -51,9 +52,12 @@ var loadLang = function (lang) {
 }
 
 var loadLocal = function (lang) {
-    import(/* webpackChunkName: "lang-[request]" */ `@/lang/${lang}`).then(function (messages) {
-        return setI18nLanguage.call(this.$i18n, lang, messages)
-    })
+    var _i18n = this.$i18n
+    if (typeof setting.local === 'function') {
+        setting.local(lang, function (lang, messages) {
+            setI18nLanguage.call(_i18n, lang, messages)
+        })
+    }
 }
 
 var $i18nAsync = function (lang, force) {
@@ -71,7 +75,7 @@ var $i18nAsync = function (lang, force) {
 export default {
     install: function (Vue, options) {
         _forEach(options, function (o, name) {
-            if (['request', 'path', 'messages'].indexOf(name) > -1) {
+            if (['request', 'local', 'messages'].indexOf(name) > -1) {
                 setting[name] = o
             }
         })

@@ -1,6 +1,6 @@
 {
   "name": "vue-i18n-async",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Async load lang from internet or local",
   "main": "index.js",
   "scripts": {
