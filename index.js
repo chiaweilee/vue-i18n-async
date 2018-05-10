@@ -28,37 +28,39 @@ var loadLang = function (lang) {
         setting.request.plugin.get(setting.request.url.replace(/\{lang\}/gi, lang), {
             timeout: setting.request.timeout
         })
-            .then(({data}) => {
-            // get online lang success
-            setI18nLanguage.call(this.$i18n, lang, data)
-        if (typeof setting.request.after === 'function') {
-            setting.request.after()
-        }
-    })
-    .catch(
-            () => {
-            // 2, load online fail, use local
-            console.warn('Get online lang package fail, use local instead.')
-        loadLocal.call(this, lang)
-        if (typeof setting.request.after === 'function') {
-            setting.request.after()
-        }
-    }
-    )
+            .then(function (e) {
+                // get online lang success
+                return setI18nLanguage.call(this.$i18n, lang, e.data)
+                if (typeof setting.request.after === 'function') {
+                    setting.request.after()
+                }
+            })
+            .catch(
+                function () {
+                    // 2, load online fail, use local
+                    console.warn('Get online lang package fail, use local instead.')
+                    loadLocal.call(this, lang)
+                    if (typeof setting.request.after === 'function') {
+                        setting.request.after()
+                    }
+                }
+            )
     } else {
         loadLocal.call(this, lang)
     }
 }
 
 var loadLocal = function (lang) {
-    import(/* webpackChunkName: "lang-[request]" */ `@/lang/${lang}`).then(messages => setI18nLanguage.call(this.$i18n, lang, messages))
+    import(/* webpackChunkName: "lang-[request]" */ `@/lang/${lang}`).then(function (messages) {
+        return setI18nLanguage.call(this.$i18n, lang, messages)
+    })
 }
 
-var $i18nAsync = function (lang, force = false) {
+var $i18nAsync = function (lang, force) {
     // this -> vm
     if (!lang) return
-    if (force || this.$i18n.locale !== lang) {
-        if (force || setting.messages[lang] === undefined) {
+    if (force === true || this.$i18n.locale !== lang) {
+        if (force === true || setting.messages[lang] === undefined) {
             return loadLang.call(this, lang)
         }
         return Promise.resolve(setI18nLanguage.call(this.$i18n, lang, setting.messages[lang]))
@@ -67,12 +69,12 @@ var $i18nAsync = function (lang, force = false) {
 }
 
 export default {
-    install: (Vue, options) => {
-    _forEach(options, (o, name) => {
-    if (['request', 'path', 'messages'].indexOf(name) > -1) {
-        setting[name] = o
+    install: function (Vue, options) {
+        _forEach(options, function (o, name) {
+            if (['request', 'path', 'messages'].indexOf(name) > -1) {
+                setting[name] = o
+            }
+        })
+        Object.defineProperty(Vue.prototype, '$i18nAsync', {value: $i18nAsync})
     }
-})
-Object.defineProperty(Vue.prototype, '$i18nAsync', {value: $i18nAsync})
-}
 }
