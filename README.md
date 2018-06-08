@@ -14,24 +14,22 @@ import vueI18nAsync from './plugin/vue-i18n-async'
 Vue.use(VueI18n)
 
 Vue.use(vueI18nAsync, {
-  request: {
-    plugin: axios, // axios or axios like plugin, optional, for request.
-    url: 'http://localhost:8090/{lang}.js', // optional, {lang} will replace with lang name
-    timeout: 3000, // timeout for axios or axios like
-    before: () => {
-      console.log(this)
+    async: (lang, resolve, reject) => {
+      axios.get('http://localhost:8090/zh-cn.json', {
+        timeout: 3000
+      })
+        .then(({data}) => {
+          resolve(lang, data)
+        })
+        .catch(() => reject(/* newLang */))
     },
-    after: () => {
-      console.log(this)
+    failback: (lang, resolve) => {
+      import(/* webpackChunkName: "lang-[request]" */ `../../lang/${lang}.json`)
+        .then(messages => {
+          resolve(messages)
+        })
     }
-  }
-  local: (lang, setter) => import(/* webpackChunkName: "lang-[request]" */ `@/lang/${lang}`).then(messages => setter(lang, messages)),
-  // the same messages with new VueI18n()
-  messages: {
-    en: undefine,
-    'zh-cn': undefine
-  }
-})
+  })
 
 const i18n = new VueI18n({
   locale: 'en',

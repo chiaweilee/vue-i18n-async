@@ -1,84 +1,67 @@
-/*!
- * +v MIT
+/*! Vue-I18n-async 0.1.0
+ * +v MIT 2018
  */
-import _forEach from 'lodash/forEach'
-
-var setting = {
-    request: undefined,
-    local: undefined,
-    messages: undefined
+var preset = {
+    async: undefined,
+    failback: undefined,
+    messages: {}
 }
 
-var setI18nLanguage = function (lang, messages) {
-    // this -> $i18n
-    if (!messages) return
+var setLocaleMessage = function (lang, messages) {
+    if (!lang || !messages) return
     this.locale = lang
     this.setLocaleMessage(lang, messages)
     document.querySelector('html').setAttribute('lang', lang)
     return lang
 }
 
-var loadLang = function (lang) {
-    // this -> vm
+var tryLoadLang = function (lang) {
     var _this = this
-    if (setting.request && setting.request.plugin) {
-        if (typeof setting.request.before === 'function') {
-            setting.request.before()
+    // async fallback
+    var fallback = function (fallToLang) {
+        tryLoadFromFailback.call(_this, fallToLang || lang)
+    }
+    if (preset.async && typeof preset.async === 'function') {
+        // async callback
+        var callback = function (toLang, message) {
+            return setLocaleMessage.call(_this.$i18n, toLang || lang, message)
         }
-        // 1, try load JSON from online
-        setting.request.plugin.get(setting.request.url.replace(/\{lang\}/gi, lang), {
-            timeout: setting.request.timeout
+        // try load async
+        preset.async(lang, callback, function () {
+            if (!preset.failback || typeof preset.failback !== 'function') console.warn('[Vue-I18n-Async]Load async fail..')
+            console.warn('[Vue-I18n-Async]Load async fail, trying load from failback..')
+            fallback.apply(_this, arguments)
         })
-            .then(function (e) {
-                // get online lang success
-                return setI18nLanguage.call(_this.$i18n, lang, e.data)
-                if (typeof setting.request.after === 'function') {
-                    setting.request.after()
-                }
-            })
-            .catch(
-                function () {
-                    // 2, load online fail, use local
-                    console.warn('Get online lang package fail, use local instead.')
-                    loadLocal.call(_this, lang)
-                    if (typeof setting.request.after === 'function') {
-                        setting.request.after()
-                    }
-                }
-            )
     } else {
-        loadLocal.call(this, lang)
+        fallback()
     }
 }
 
-var loadLocal = function (lang) {
+var tryLoadFromFailback = function (lang) {
     var _i18n = this.$i18n
-    if (typeof setting.local === 'function') {
-        setting.local(lang, function (lang, messages) {
-            setI18nLanguage.call(_i18n, lang, messages)
+    if (typeof preset.failback === 'function') {
+        preset.failback(lang, function (messages) {
+            setLocaleMessage.call(_i18n, lang, messages)
         })
     }
 }
 
 var $i18nAsync = function (lang, force) {
-    // this -> vm
     if (!lang) return
     if (force === true || this.$i18n.locale !== lang) {
-        if (force === true || setting.messages[lang] === undefined) {
-            return loadLang.call(this, lang)
+        if (force === true || preset.messages[lang] === undefined) {
+            return tryLoadLang.call(this, lang)
         }
-        return Promise.resolve(setI18nLanguage.call(this.$i18n, lang, setting.messages[lang]))
+        return Promise.resolve(setI18nLanguage.call(this.$i18n, lang, preset.messages[lang]))
     }
     return Promise.resolve(lang)
 }
 
 export default {
     install: function (Vue, options) {
-        _forEach(options, function (o, name) {
-            if (['request', 'local', 'messages'].indexOf(name) > -1) {
-                setting[name] = o
-            }
-        })
+        if (options.async) preset.async = options.async
+        if (options.failback) preset.failback = options.failback
+        if (options.messages) preset.messages = options.messages
         Object.defineProperty(Vue.prototype, '$i18nAsync', {value: $i18nAsync})
     }
 }

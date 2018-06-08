@@ -1,7 +1,7 @@
 {
   "name": "vue-i18n-async",
-  "version": "0.0.8",
-  "description": "Async load lang from internet or local",
+  "version": "0.1.0",
+  "description": "Async load lang from internet or local for Vue-I18n",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
