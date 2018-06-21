@@ -15,7 +15,7 @@ Vue.use(VueI18n)
 
 Vue.use(vueI18nAsync, {
     async: (lang, resolve, reject) => {
-      axios.get('http://localhost:8090/zh-cn.json', {
+      axios.get('http://localhost/' + lang + '.json', {
         timeout: 3000
       })
         .then(({data}) => {
