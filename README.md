@@ -9,7 +9,7 @@ Async load lang from internet or local
 ```javascript
 import Vue from 'vue'
 import VueI18n from 'vue-i18n'
-import vueI18nAsync from './plugin/vue-i18n-async'
+import vueI18nAsync from 'vue-i18n-async'
 
 Vue.use(VueI18n)
 
