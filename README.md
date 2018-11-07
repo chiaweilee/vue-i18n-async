@@ -4,6 +4,12 @@ Async load lang from internet or local
 # Install
 > npm install vue-i18n-async
 
+# NOT MAINTAIN ⚠️
+
+use the lastest `vue-i18n`
+
+https://kazupon.github.io/vue-i18n/guide/migrations.html#global-config
+
 # Usage
 - in entry
 ```javascript
