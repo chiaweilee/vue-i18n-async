@@ -1,4 +1,7 @@
 # vue-i18n-async
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/chiaweilee/vue-i18n-async.svg)](https://greenkeeper.io/)
+
 Async load lang from internet or local
 
 # Install
